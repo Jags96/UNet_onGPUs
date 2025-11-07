@@ -38,16 +38,10 @@ unet-finetuning/
 │   ├── inference.py
 │   └── download_data.sh
 ├── slurm/
-│   ├── train_single.slurm
-│   ├── train_multi_gpu.slurm
-│   └── evaluate.slurm
-├── notebooks/
-│   ├── data_exploration.ipynb
-│   └── results_visualization.ipynb
-└── tests/
-    ├── test_models.py
-    ├── test_data.py
-    └── test_utils.py
+│   └── train_multi_gpu.slurm
+└── notebooks/
+    └── data.ipynb
+
 ```
 
 ## Datasets
