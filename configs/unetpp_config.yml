@@ -1,0 +1,85 @@
+experiment:
+  name: "unetpp_kvasir_modified"
+  log_dir: "logs"
+  save_dir: "checkpoints"
+  wandb_project: "unet-polyp-segmentation"
+  use_wandb: false
+
+model:
+  name: "unet++"
+  encoder: "resnet34"
+  encoder_weights: "imagenet"
+  in_channels: 3
+  num_classes: 1
+  deep_supervision: false
+  modified: true  # Use modified architecture with attention gates and SE blocks
+  base_channels: 32  # Reduced from default 64 for efficiency
+
+data:
+  train_dataset: "kvasir"
+  test_datasets: ["kvasir", "cvc"]
+  
+  # Dataset paths
+  kvasir_path: "data/Kvasir-SEG"
+  cvc_path: "data/CVC-ClinicDB"
+  
+  # Data loading
+  batch_size: 12  # Slightly smaller due to more parameters
+  num_workers: 4
+  image_size: [256, 256]
+  
+  # Augmentation
+  augmentation:
+    horizontal_flip: 0.5
+    vertical_flip: 0.5
+    rotation: 30
+    brightness_contrast: 0.3
+    gaussian_noise: 0.2
+    blur: 0.2
+    elastic_transform: 0.3
+
+training:
+  epochs: 100
+  learning_rate: 0.0001
+  weight_decay: 0.00001
+  
+  # Optimizer
+  optimizer: "adam"
+  momentum: 0.9
+  
+  # Scheduler
+  scheduler: "cosine"
+  scheduler_params:
+    T_max: 100
+    min_lr: 0.000001
+  
+  # Loss function
+  loss: "dice_bce"
+  loss_params:
+    dice_weight: 0.5
+    bce_weight: 0.5
+  
+  # Regularization
+  gradient_clip: 1.0
+  early_stopping_patience: 15
+  
+  # Mixed precision
+  use_amp: true
+
+validation:
+  frequency: 1
+  metrics: ["dice", "iou", "precision", "recall", "f1"]
+  save_best: true
+  save_last: true
+  save_frequency: 10
+
+distributed:
+  backend: "nccl"
+  world_size: 4
+  find_unused_parameters: false
+
+inference:
+  batch_size: 8
+  tta: false
+  save_predictions: true
+  visualization: true

@@ -1,0 +1,83 @@
+experiment:
+  name: "unet_kvasir_resnet34"
+  log_dir: "logs"
+  save_dir: "checkpoints"
+  wandb_project: "unet-polyp-segmentation"
+  use_wandb: false
+
+model:
+  name: "unet"
+  encoder: "resnet34"  # resnet18, resnet34, resnet50, resnet101, efficientnet-b0, etc.
+  encoder_weights: "imagenet"  # pretrained weights
+  in_channels: 3
+  num_classes: 1
+  custom: false  # use custom implementation or segmentation_models_pytorch
+
+data:
+  train_dataset: "kvasir"
+  test_datasets: ["kvasir", "cvc"]
+  
+  # Dataset paths
+  kvasir_path: "data/Kvasir-SEG"
+  cvc_path: "data/CVC-ClinicDB"
+  
+  # Data loading
+  batch_size: 16
+  num_workers: 4
+  image_size: [256, 256]
+  
+  # Augmentation
+  augmentation:
+    horizontal_flip: 0.5
+    vertical_flip: 0.5
+    rotation: 30
+    brightness_contrast: 0.3
+    gaussian_noise: 0.2
+    blur: 0.2
+    elastic_transform: 0.3
+
+training:
+  epochs: 100
+  learning_rate: 0.0001
+  weight_decay: 0.00001
+  
+  # Optimizer
+  optimizer: "adam"  # adam, adamw, sgd
+  momentum: 0.9  # for SGD
+  
+  # Scheduler
+  scheduler: "cosine"  # cosine, step, plateau, polynomial
+  scheduler_params:
+    T_max: 100  # for cosine
+    min_lr: 0.000001
+  
+  # Loss function
+  loss: "dice_bce"  # dice, iou, focal, dice_bce, tversky, focal_tversky
+  loss_params:
+    dice_weight: 0.5
+    bce_weight: 0.5
+  
+  # Regularization
+  gradient_clip: 1.0
+  early_stopping_patience: 15
+  
+  # Mixed precision
+  use_amp: true
+
+validation:
+  frequency: 1  # validate every N epochs
+  metrics: ["dice", "iou", "precision", "recall", "f1"]
+  save_best: true
+  save_last: true
+  save_frequency: 10  # save checkpoint every N epochs
+
+distributed:
+  backend: "nccl"  # nccl for GPU, gloo for CPU
+  world_size: 4  # number of GPUs
+  find_unused_parameters: false
+
+inference:
+  batch_size: 8
+  tta: false  # test-time augmentation
+  save_predictions: true
+  visualization: true
